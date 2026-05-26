@@ -1,0 +1,281 @@
+/* Print + screen styles for the Informe satellite. Optimized for browser print → "Save as PDF". */
+
+@page {
+  size: A4;
+  margin: 18mm 14mm;
+}
+
+:root {
+  --informe-primary: #1a4d5c;
+  --informe-secondary: #2d6d85;
+  --informe-accent: #4a9bb0;
+  --informe-on-primary: #ffffff;
+  --informe-on-accent: #ffffff;
+  --informe-ink: #111827;
+  --informe-ink-muted: #6b7280;
+  --informe-edge: #d1d5db;
+}
+
+.informe-root {
+  background: #ffffff;
+  color: var(--informe-ink);
+  font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Manrope', system-ui, sans-serif;
+  font-size: 11pt;
+  line-height: 1.4;
+}
+
+.informe-page {
+  break-before: page;
+  page-break-before: always;
+  padding: 0;
+}
+
+.informe-page--first {
+  break-before: auto;
+  page-break-before: auto;
+}
+
+/* Cover */
+.informe-cover {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding-top: 30mm;
+}
+
+.informe-cover__header { margin-bottom: 18mm; }
+.informe-cover__logo { max-height: 30mm; max-width: 70mm; object-fit: contain; }
+.informe-cover__brand {
+  font-size: 20pt;
+  font-weight: 700;
+  color: var(--informe-primary);
+  letter-spacing: -0.01em;
+}
+.informe-cover__rule {
+  display: block;
+  height: 2px;
+  width: 60mm;
+  background: var(--informe-accent);
+  margin-bottom: 10mm;
+}
+.informe-cover__title {
+  font-size: 26pt;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 4mm 0;
+  color: var(--informe-ink);
+}
+.informe-cover__subtitle {
+  font-size: 12pt;
+  color: var(--informe-ink-muted);
+  margin: 0 0 14mm 0;
+}
+.informe-cover__cliente {
+  margin-bottom: 14mm;
+  border-left: 2px solid var(--informe-accent);
+  padding-left: 5mm;
+}
+.informe-cover__cliente-name {
+  font-size: 16pt;
+  font-weight: 600;
+  margin: 0;
+}
+.informe-cover__cliente-rut {
+  font-size: 11pt;
+  color: var(--informe-ink-muted);
+  margin: 1mm 0 0 0;
+}
+.informe-cover__date {
+  font-size: 10pt;
+  color: var(--informe-ink-muted);
+  margin-top: auto;
+}
+
+/* Section title */
+.informe-section-title {
+  margin: 0 0 6mm 0;
+}
+.informe-section-title__eyebrow {
+  display: block;
+  font-size: 9pt;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--informe-ink-muted);
+  margin-bottom: 2mm;
+}
+.informe-section-title__title {
+  font-size: 18pt;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0 0 2mm 0;
+  color: var(--informe-primary);
+}
+.informe-section-title__rule {
+  display: block;
+  height: 1px;
+  width: 100%;
+  background: var(--informe-accent);
+}
+
+/* Tables */
+.informe-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10pt;
+  margin-bottom: 8mm;
+}
+.informe-table thead { display: table-header-group; }
+.informe-table tbody tr { break-inside: avoid; page-break-inside: avoid; }
+.informe-table__th {
+  border-bottom: 1px solid var(--informe-primary);
+  font-weight: 600;
+  padding: 2mm 2mm 2mm 0;
+  color: var(--informe-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 9pt;
+}
+.informe-table__th--right, .informe-table__td--right { text-align: right; }
+.informe-table__th--center, .informe-table__td--center { text-align: center; }
+.informe-table__td {
+  padding: 2mm 2mm 2mm 0;
+  border-bottom: 1px solid var(--informe-edge);
+}
+.informe-table__row:last-child .informe-table__td { border-bottom: none; }
+
+/* Field grid (Perfil) */
+.informe-fieldgrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3mm 8mm;
+  margin: 0 0 6mm 0;
+}
+.informe-fieldgrid__item {
+  display: flex;
+  flex-direction: column;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.informe-fieldgrid__label {
+  font-size: 8.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--informe-ink-muted);
+}
+.informe-fieldgrid__value {
+  font-size: 10.5pt;
+  font-weight: 500;
+  margin: 0.5mm 0 0 0;
+  color: var(--informe-ink);
+}
+
+.informe-empty {
+  font-size: 10pt;
+  color: var(--informe-ink-muted);
+  font-style: italic;
+}
+
+.informe-section-block {
+  margin-bottom: 8mm;
+}
+
+.informe-section-block__title {
+  font-size: 12pt;
+  font-weight: 600;
+  margin: 0 0 3mm 0;
+  color: var(--informe-secondary);
+}
+
+.informe-person-header {
+  font-size: 10pt;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--informe-ink-muted);
+  margin: 0 0 2mm 0;
+}
+
+.informe-resumen-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10pt;
+  margin-bottom: 8mm;
+}
+.informe-resumen-table th, .informe-resumen-table td {
+  padding: 2mm 2mm 2mm 0;
+  border-bottom: 1px solid var(--informe-edge);
+}
+.informe-resumen-table th {
+  border-bottom: 1px solid var(--informe-primary);
+  color: var(--informe-primary);
+  text-align: right;
+  font-size: 9pt;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.informe-resumen-table th:first-child, .informe-resumen-table td:first-child {
+  text-align: left;
+}
+.informe-resumen-table tr.informe-resumen-row--total td {
+  font-weight: 700;
+  border-top: 1px solid var(--informe-secondary);
+}
+.informe-resumen-table tr.informe-resumen-row--grandtotal td {
+  font-weight: 700;
+  border-top: 2px solid var(--informe-primary);
+  background: rgba(0, 0, 0, 0.02);
+}
+.informe-resumen-table tr.informe-resumen-row--subheader td {
+  background: var(--informe-accent);
+  color: var(--informe-on-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 9pt;
+}
+.informe-resumen-table td.informe-resumen-cell--right {
+  text-align: right;
+}
+
+/* Footer
+ * Browsers (Chrome, Firefox, Safari) don't implement CSS Paged Media's
+ * `position: running()` / `content: element(...)`, so we can't pull a DOM
+ * element into the page margin. Static `content` IS supported, which is
+ * enough for the per-page "Powered by Jogi" mark. The cover already shows
+ * the company name at full size — no need to repeat it on every footer.
+ */
+@page {
+  @bottom-right {
+    content: 'Powered by Jogi';
+    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
+    font-size: 8pt;
+    color: #6b7280;
+    letter-spacing: 0.04em;
+  }
+}
+
+/* On-screen footer fallback so the informe preview still surfaces the mark. */
+.informe-footer {
+  font-size: 8pt;
+  color: var(--informe-ink-muted);
+  text-align: right;
+  letter-spacing: 0.04em;
+  margin-top: 12mm;
+}
+
+@media print {
+  html, body { background: #ffffff; }
+  .informe-root { -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
+  .informe-screen-only { display: none !important; }
+  /* Hide the in-DOM footer in print — the @page margin box handles it. */
+  .informe-footer { display: none; }
+}
+
+@media screen {
+  .informe-root {
+    max-width: 210mm;
+    margin: 0 auto;
+    padding: 14mm;
+    box-shadow: 0 0 0 1px var(--informe-edge);
+  }
+  .informe-page { padding-top: 8mm; }
+  .informe-screen-only { display: block; }
+}

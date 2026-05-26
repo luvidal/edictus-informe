@@ -1,3 +1,15 @@
 // @jogi/informe — public surface
-// Populated by Agent R during initial extraction.
-export {}
+
+export { Informe } from './informe'
+export type { InformeProps } from './informe'
+export type {
+  InformeInput,
+  InformeApplicant,
+  InformePerfilField,
+  InformePerfilSubsection,
+  InformeCallout,
+  InformeResumenRow,
+  InformeResumenTable,
+  ColumnConfig,
+  SituacionRow,
+} from './types'
