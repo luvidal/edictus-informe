@@ -16,7 +16,10 @@
     letter-spacing: 0.02em;
   }
   @top-right {
-    content: string(informe-cliente) ' · p.' counter(page) ' / ' counter(pages);
+    /* `string(informe-cliente)` includes its own ' · ' suffix when cliente is
+     * non-empty, so a missing cliente doesn't leave a dangling separator
+     * before "p.N / M". See the `.informe-header__cliente` rule below. */
+    content: string(informe-cliente) 'p.' counter(page) ' / ' counter(pages);
     font-family: ui-sans-serif, -apple-system, system-ui, sans-serif;
     font-size: 8pt;
     color: #6b7280;
@@ -130,6 +133,15 @@
   margin: 0 0 4mm 0;
   font-size: 11pt;
   color: var(--informe-ink-muted);
+}
+/* Pull the cliente nombre into the running page header on p.2+ via the
+ * `@page @top-right { content: string(informe-cliente) … }` declaration
+ * above. `data-cliente` is set on this element by `header.tsx`. The selector
+ * skips the empty case so the @top-right content never carries a dangling
+ * ' · ' before "p.N / M" when there is no cliente. Browsers without
+ * paged-media `string-set` support degrade to an empty top-right anyway. */
+.informe-header__cliente[data-cliente]:not([data-cliente='']) {
+  string-set: informe-cliente attr(data-cliente) ' · ';
 }
 .informe-header__cliente-name { font-weight: 500; color: var(--informe-ink); }
 .informe-header__cliente-sep { color: var(--informe-ink-faint); }

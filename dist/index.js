@@ -69,7 +69,7 @@ function formatUF(uf) {
 function HeaderBand({ meta, brand, cliente }) {
   const generated = formatChileDateShort(meta.generatedAt);
   const ufDateStr = formatUFDate(meta.ufDate);
-  return /* @__PURE__ */ jsxRuntime.jsxs("header", { className: "informe-header", children: [
+  return /* @__PURE__ */ jsxRuntime.jsxs("header", { className: "informe-header", "data-title": meta.requestLabel, children: [
     /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "informe-header__top", children: [
       /* @__PURE__ */ jsxRuntime.jsx("div", { className: "informe-header__brand", children: brand.logoUrl ? /* @__PURE__ */ jsxRuntime.jsx("img", { src: brand.logoUrl, alt: brand.companyName || "Logo", className: "informe-header__logo" }) : /* @__PURE__ */ jsxRuntime.jsx("span", { className: "informe-header__company", children: brand.companyName ?? "Jogi" }) }),
       /* @__PURE__ */ jsxRuntime.jsxs("dl", { className: "informe-header__meta", children: [
@@ -87,11 +87,11 @@ function HeaderBand({ meta, brand, cliente }) {
       ] })
     ] }),
     /* @__PURE__ */ jsxRuntime.jsx("h1", { className: "informe-header__title", children: meta.requestLabel }),
-    cliente && /* @__PURE__ */ jsxRuntime.jsxs("p", { className: "informe-header__cliente", children: [
+    /* @__PURE__ */ jsxRuntime.jsx("p", { className: "informe-header__cliente", "data-cliente": cliente?.nombre ?? "", children: cliente && /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
       /* @__PURE__ */ jsxRuntime.jsx("span", { className: "informe-header__cliente-name", children: cliente.nombre }),
       /* @__PURE__ */ jsxRuntime.jsx("span", { className: "informe-header__cliente-sep", "aria-hidden": true, children: " \xB7 " }),
       /* @__PURE__ */ jsxRuntime.jsx("span", { className: "informe-header__cliente-rut", children: cliente.rut })
-    ] }),
+    ] }) }),
     /* @__PURE__ */ jsxRuntime.jsx("span", { className: "informe-header__rule", "aria-hidden": true })
   ] });
 }
@@ -240,6 +240,7 @@ function PerfilMatrix({ applicants }) {
   }) });
 }
 var PERSONA_KEY = "__persona__";
+var ABSENCE_KEY = "__absence__";
 var CATEGORIES = [
   { key: "deudas", title: "Deudas", emptyLabel: "Sin deudas registradas." },
   { key: "propiedades", title: "Propiedades", emptyLabel: "Sin propiedades registradas." },
@@ -256,16 +257,25 @@ function formatCell(value, format) {
   }
   return String(value);
 }
-function mergeRowsForCategory(applicants, category) {
+function mergeRowsForCategory(applicants, category, emptyLabel) {
   const baseColumns = applicants[0]?.situacion[category].columns ?? [];
+  const showPersona = applicants.length > 1;
   const mergedRows = [];
   applicants.forEach((a) => {
     const rows = a.situacion[category].rows;
+    if (rows.length === 0) {
+      if (showPersona) {
+        mergedRows.push({
+          row: { [PERSONA_KEY]: a.label, [ABSENCE_KEY]: emptyLabel },
+          absent: true
+        });
+      }
+      return;
+    }
     for (const row of rows) {
-      mergedRows.push({ ...row, [PERSONA_KEY]: a.label });
+      mergedRows.push({ row: { ...row, [PERSONA_KEY]: a.label } });
     }
   });
-  const showPersona = applicants.length > 1;
   const columns = showPersona ? [{ key: PERSONA_KEY, label: "Persona", align: "left", format: "text" }, ...baseColumns] : baseColumns;
   return { rows: mergedRows, columns };
 }
@@ -297,24 +307,33 @@ function CategoryTable({
           c.key
         );
       }) }) }),
-      /* @__PURE__ */ jsxRuntime.jsx("tbody", { children: rows.length === 0 ? /* @__PURE__ */ jsxRuntime.jsx("tr", { className: "informe-table__emptyrow", children: /* @__PURE__ */ jsxRuntime.jsx("td", { colSpan: columns.length, className: "informe-table__emptycell", children: emptyLabel }) }) : rows.map((row, ri) => /* @__PURE__ */ jsxRuntime.jsx("tr", { className: "informe-table__row", children: columns.map((c) => {
-        const align = c.align ?? (c.format === "currency" || c.format === "integer" ? "right" : "left");
-        const numeric = c.format === "currency" || c.format === "integer";
-        return /* @__PURE__ */ jsxRuntime.jsx(
-          "td",
-          {
-            className: `informe-table__td informe-table__td--${align}${numeric ? " informe-table__td--num" : ""}`,
-            children: formatCell(row[c.key], c.format)
-          },
-          c.key
-        );
-      }) }, ri)) })
+      /* @__PURE__ */ jsxRuntime.jsx("tbody", { children: rows.length === 0 ? /* @__PURE__ */ jsxRuntime.jsx("tr", { className: "informe-table__emptyrow", children: /* @__PURE__ */ jsxRuntime.jsx("td", { colSpan: columns.length, className: "informe-table__emptycell", children: emptyLabel }) }) : rows.map((merged, ri) => {
+        if (merged.absent) {
+          const dataColSpan = Math.max(columns.length - 1, 1);
+          return /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: "informe-table__row informe-table__emptyrow", children: [
+            /* @__PURE__ */ jsxRuntime.jsx("td", { className: "informe-table__td informe-table__td--left", children: String(merged.row[PERSONA_KEY] ?? "") }),
+            /* @__PURE__ */ jsxRuntime.jsx("td", { colSpan: dataColSpan, className: "informe-table__emptycell", children: String(merged.row[ABSENCE_KEY] ?? "") })
+          ] }, ri);
+        }
+        return /* @__PURE__ */ jsxRuntime.jsx("tr", { className: "informe-table__row", children: columns.map((c) => {
+          const align = c.align ?? (c.format === "currency" || c.format === "integer" ? "right" : "left");
+          const numeric = c.format === "currency" || c.format === "integer";
+          return /* @__PURE__ */ jsxRuntime.jsx(
+            "td",
+            {
+              className: `informe-table__td informe-table__td--${align}${numeric ? " informe-table__td--num" : ""}`,
+              children: formatCell(merged.row[c.key], c.format)
+            },
+            c.key
+          );
+        }) }, ri);
+      }) })
     ] })
   ] });
 }
 function SituacionTables({ applicants }) {
   return /* @__PURE__ */ jsxRuntime.jsx("div", { className: "informe-situacion", children: CATEGORIES.map((cat) => {
-    const merged = mergeRowsForCategory(applicants, cat.key);
+    const merged = mergeRowsForCategory(applicants, cat.key, cat.emptyLabel);
     return /* @__PURE__ */ jsxRuntime.jsx(
       CategoryTable,
       {

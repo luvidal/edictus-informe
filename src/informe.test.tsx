@@ -76,7 +76,53 @@ describe('Empty-state row', () => {
     // Empty rows live inside <tbody>; the empty cells get a colSpan.
     expect(html).toContain('informe-table__emptycell')
   })
+
+  it('at N>1 emits a per-applicant absence row when that applicant is empty', () => {
+    // fixtureN2: titular has 1 propiedad row, codeudor María has 0 propiedades.
+    // Expect: Propiedades table renders Titular's row + a muted absence row
+    // for the codeudor (not just Titular's row in isolation).
+    const html = renderToStaticMarkup(<Informe input={fixtureN2()} />)
+    const propBody = extractCategoryBody(html, 'Propiedades')
+    expect(propBody).not.toBeNull()
+    const rows = matchAll(propBody!, /<tr[\s\S]*?<\/tr>/g)
+    expect(rows).toHaveLength(2)
+    // First row: titular's data — contains the avaluo currency.
+    expect(rows[0]).toContain('Las Condes')
+    // Second row: codeudor's absence row.
+    expect(rows[1]).toContain('informe-table__emptyrow')
+    expect(rows[1]).toContain('María')
+    expect(rows[1]).toContain('Sin propiedades registradas.')
+  })
+
+  it('at N=1 does not emit per-applicant absence rows (table-wide empty row only)', () => {
+    // fixtureN1: single titular with no vehiculos. The table renders ONE empty
+    // row (table-wide), not a per-applicant absence row.
+    const html = renderToStaticMarkup(<Informe input={fixtureN1()} />)
+    const vehBody = extractCategoryBody(html, 'Vehículos')
+    expect(vehBody).not.toBeNull()
+    const rows = matchAll(vehBody!, /<tr[\s\S]*?<\/tr>/g)
+    expect(rows).toHaveLength(1)
+    expect(rows[0]).toContain('Sin vehículos registrados.')
+  })
 })
+
+/**
+ * Pull the `<tbody>…</tbody>` slice that follows the category's `<h3>` title.
+ * Crude but deterministic against `renderToStaticMarkup` output, no DOM parser.
+ */
+function extractCategoryBody(html: string, title: string): string | null {
+  const idx = html.indexOf(`>${title}<`)
+  if (idx < 0) return null
+  const bodyOpen = html.indexOf('<tbody', idx)
+  if (bodyOpen < 0) return null
+  const bodyClose = html.indexOf('</tbody>', bodyOpen)
+  if (bodyClose < 0) return null
+  return html.slice(bodyOpen, bodyClose)
+}
+
+function matchAll(s: string, re: RegExp): string[] {
+  return s.match(re) ?? []
+}
 
 describe('Long-text fields', () => {
   it('pulls longText=true fields out of the matrix into a stacked list', () => {
@@ -86,6 +132,25 @@ describe('Long-text fields', () => {
     // the long-text list, not as a matrix row.
     expect(html).toContain('informe-perfilmatrix__longlabel')
     expect(html).toContain('Empresa')
+  })
+})
+
+describe('Running page header data attrs', () => {
+  it('sets data-title on .informe-header and data-cliente on .informe-header__cliente', () => {
+    const html = renderToStaticMarkup(<Informe input={fixtureN1()} />)
+    // data-title carries the request label into @top-left via string-set.
+    expect(html).toMatch(/<header class="informe-header" data-title="Crédito Hipotecario — Juan Pérez"/)
+    // data-cliente carries the cliente nombre into @top-right via string-set.
+    expect(html).toMatch(/class="informe-header__cliente" data-cliente="Juan Pérez González"/)
+  })
+
+  it('emits an empty data-cliente when cliente is null', () => {
+    const input = fixtureN1()
+    input.cliente = null
+    const html = renderToStaticMarkup(<Informe input={input} />)
+    expect(html).toMatch(/class="informe-header__cliente" data-cliente=""/)
+    // data-title is still present (always available from meta.requestLabel).
+    expect(html).toMatch(/<header class="informe-header" data-title="Crédito Hipotecario — Juan Pérez"/)
   })
 })
 

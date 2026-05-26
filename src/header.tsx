@@ -43,12 +43,18 @@ export interface HeaderBandProps {
  * Compact header band. Replaces the full-page cover. Logo + request title row
  * on the left, cliente + generated date + UF block on the right. Hairline
  * primary rule below.
+ *
+ * `data-title` / `data-cliente` carry text into the `@page @top-left/@top-right`
+ * boxes via CSS `string-set: … attr(…)`. Without these attributes the running
+ * header on p.2+ resolves to empty (P3 fix). The cliente attribute is always
+ * present (empty string when no cliente) so the css selector that pairs with
+ * it never fails to match.
  */
 export function HeaderBand({ meta, brand, cliente }: HeaderBandProps) {
   const generated = formatChileDateShort(meta.generatedAt)
   const ufDateStr = formatUFDate(meta.ufDate)
   return (
-    <header className='informe-header'>
+    <header className='informe-header' data-title={meta.requestLabel}>
       <div className='informe-header__top'>
         <div className='informe-header__brand'>
           {brand.logoUrl
@@ -69,13 +75,15 @@ export function HeaderBand({ meta, brand, cliente }: HeaderBandProps) {
         </dl>
       </div>
       <h1 className='informe-header__title'>{meta.requestLabel}</h1>
-      {cliente && (
-        <p className='informe-header__cliente'>
-          <span className='informe-header__cliente-name'>{cliente.nombre}</span>
-          <span className='informe-header__cliente-sep' aria-hidden> · </span>
-          <span className='informe-header__cliente-rut'>{cliente.rut}</span>
-        </p>
-      )}
+      <p className='informe-header__cliente' data-cliente={cliente?.nombre ?? ''}>
+        {cliente && (
+          <>
+            <span className='informe-header__cliente-name'>{cliente.nombre}</span>
+            <span className='informe-header__cliente-sep' aria-hidden> · </span>
+            <span className='informe-header__cliente-rut'>{cliente.rut}</span>
+          </>
+        )}
+      </p>
       <span className='informe-header__rule' aria-hidden />
     </header>
   )

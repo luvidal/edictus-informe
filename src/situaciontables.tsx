@@ -5,6 +5,7 @@ import type {
 } from './types'
 
 const PERSONA_KEY = '__persona__'
+const ABSENCE_KEY = '__absence__'
 
 type Category = 'deudas' | 'propiedades' | 'vehiculos' | 'inversiones'
 
@@ -32,8 +33,14 @@ function formatCell(value: unknown, format: ColumnConfig['format']): ReactNode {
   return String(value)
 }
 
+interface MergedRow {
+  row: SituacionRow
+  /** Marker: render this row as a per-applicant "Sin … registradas." absence row. */
+  absent?: boolean
+}
+
 interface MergedRowsResult {
-  rows: SituacionRow[]
+  rows: MergedRow[]
   columns: ColumnConfig[]
 }
 
@@ -43,21 +50,36 @@ interface MergedRowsResult {
  * column config wins (analyst-defined column order across applicants is
  * identical — they all come from the same `buildDeudas`/`buildPropiedades`/etc.
  * preset).
+ *
+ * At N>1, applicants whose category is empty contribute one muted absence row
+ * so the table reflects every applicant's standing, not just the ones with
+ * data. At N=1 the table-wide empty row in `CategoryTable` covers the empty
+ * case, so absence rows are not emitted.
  */
 function mergeRowsForCategory(
   applicants: InformeApplicant[],
   category: Category,
+  emptyLabel: string,
 ): MergedRowsResult {
   // Base columns from the first applicant that has them.
   const baseColumns = applicants[0]?.situacion[category].columns ?? []
-  const mergedRows: SituacionRow[] = []
+  const showPersona = applicants.length > 1
+  const mergedRows: MergedRow[] = []
   applicants.forEach((a) => {
     const rows = a.situacion[category].rows
+    if (rows.length === 0) {
+      if (showPersona) {
+        mergedRows.push({
+          row: { [PERSONA_KEY]: a.label, [ABSENCE_KEY]: emptyLabel },
+          absent: true,
+        })
+      }
+      return
+    }
     for (const row of rows) {
-      mergedRows.push({ ...row, [PERSONA_KEY]: a.label })
+      mergedRows.push({ row: { ...row, [PERSONA_KEY]: a.label } })
     }
   })
-  const showPersona = applicants.length > 1
   const columns: ColumnConfig[] = showPersona
     ? [{ key: PERSONA_KEY, label: 'Persona', align: 'left', format: 'text' }, ...baseColumns]
     : baseColumns
@@ -69,7 +91,7 @@ function CategoryTable({
 }: {
   title: string
   emptyLabel: string
-  rows: SituacionRow[]
+  rows: MergedRow[]
   columns: ColumnConfig[]
 }) {
   return (
@@ -105,22 +127,40 @@ function CategoryTable({
             <tr className='informe-table__emptyrow'>
               <td colSpan={columns.length} className='informe-table__emptycell'>{emptyLabel}</td>
             </tr>
-          ) : rows.map((row, ri) => (
-            <tr key={ri} className='informe-table__row'>
-              {columns.map(c => {
-                const align = c.align ?? (c.format === 'currency' || c.format === 'integer' ? 'right' : 'left')
-                const numeric = c.format === 'currency' || c.format === 'integer'
-                return (
-                  <td
-                    key={c.key}
-                    className={`informe-table__td informe-table__td--${align}${numeric ? ' informe-table__td--num' : ''}`}
-                  >
-                    {formatCell(row[c.key], c.format)}
+          ) : rows.map((merged, ri) => {
+            if (merged.absent) {
+              // Per-applicant absence row at N>1: keep the Persona cell, then a
+              // single italic "Sin … registradas." cell spanning the remaining
+              // data columns. Matches the table-wide empty row's styling.
+              const dataColSpan = Math.max(columns.length - 1, 1)
+              return (
+                <tr key={ri} className='informe-table__row informe-table__emptyrow'>
+                  <td className='informe-table__td informe-table__td--left'>
+                    {String(merged.row[PERSONA_KEY] ?? '')}
                   </td>
-                )
-              })}
-            </tr>
-          ))}
+                  <td colSpan={dataColSpan} className='informe-table__emptycell'>
+                    {String(merged.row[ABSENCE_KEY] ?? '')}
+                  </td>
+                </tr>
+              )
+            }
+            return (
+              <tr key={ri} className='informe-table__row'>
+                {columns.map(c => {
+                  const align = c.align ?? (c.format === 'currency' || c.format === 'integer' ? 'right' : 'left')
+                  const numeric = c.format === 'currency' || c.format === 'integer'
+                  return (
+                    <td
+                      key={c.key}
+                      className={`informe-table__td informe-table__td--${align}${numeric ? ' informe-table__td--num' : ''}`}
+                    >
+                      {formatCell(merged.row[c.key], c.format)}
+                    </td>
+                  )
+                })}
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     </div>
@@ -141,7 +181,7 @@ export function SituacionTables({ applicants }: SituacionTablesProps) {
   return (
     <div className='informe-situacion'>
       {CATEGORIES.map(cat => {
-        const merged = mergeRowsForCategory(applicants, cat.key)
+        const merged = mergeRowsForCategory(applicants, cat.key, cat.emptyLabel)
         return (
           <CategoryTable
             key={cat.key}

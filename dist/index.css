@@ -14,7 +14,7 @@
     letter-spacing: 0.02em;
   }
   @top-right {
-    content: string(informe-cliente) " \b7  p." counter(page) " / " counter(pages);
+    content: string(informe-cliente) "p." counter(page) " / " counter(pages);
     font-family:
       ui-sans-serif,
       -apple-system,
@@ -141,6 +141,9 @@
   margin: 0 0 4mm 0;
   font-size: 11pt;
   color: var(--informe-ink-muted);
+}
+.informe-header__cliente[data-cliente]:not([data-cliente=""]) {
+  string-set: informe-cliente attr(data-cliente) " \b7  ";
 }
 .informe-header__cliente-name {
   font-weight: 500;
