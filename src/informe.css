@@ -1,8 +1,39 @@
-/* Print + screen styles for the Informe satellite. Optimized for browser print → "Save as PDF". */
+/* @jogi/informe — print + screen styles. Optimized for browser print → "Save as PDF". */
 
 @page {
   size: A4;
-  margin: 18mm 14mm;
+  margin: 18mm 14mm 22mm 14mm;
+
+  /* Running page header on p.2+ via @top-left/@top-right. Browsers that
+   * support paged-media margin boxes will render the solicitud title on the
+   * left and "p.N / M" on the right. Page 1 hides the header via the first-
+   * page rule below. */
+  @top-left {
+    content: string(informe-title);
+    font-family: ui-sans-serif, -apple-system, system-ui, sans-serif;
+    font-size: 8pt;
+    color: #6b7280;
+    letter-spacing: 0.02em;
+  }
+  @top-right {
+    content: string(informe-cliente) ' · p.' counter(page) ' / ' counter(pages);
+    font-family: ui-sans-serif, -apple-system, system-ui, sans-serif;
+    font-size: 8pt;
+    color: #6b7280;
+    letter-spacing: 0.02em;
+  }
+  @bottom-right {
+    content: 'Powered by Jogi';
+    font-family: ui-sans-serif, -apple-system, system-ui, sans-serif;
+    font-size: 8pt;
+    color: #6b7280;
+    letter-spacing: 0.04em;
+  }
+}
+
+@page :first {
+  @top-left { content: ''; }
+  @top-right { content: ''; }
 }
 
 :root {
@@ -13,7 +44,10 @@
   --informe-on-accent: #ffffff;
   --informe-ink: #111827;
   --informe-ink-muted: #6b7280;
+  --informe-ink-faint: #9ca3af;
   --informe-edge: #d1d5db;
+  --informe-hairline: rgba(0, 0, 0, 0.06);
+  --informe-band-soft: rgba(0, 0, 0, 0.02);
 }
 
 .informe-root {
@@ -21,235 +55,428 @@
   color: var(--informe-ink);
   font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Manrope', system-ui, sans-serif;
   font-size: 11pt;
-  line-height: 1.4;
+  line-height: 1.45;
+  /* Pull the request label + cliente nombre into the running page header.
+   * `string-set` fires when the first matching element renders; consumers can
+   * read it from `@page @top-left/@top-right` via `content: string(...)`. */
 }
 
+/* Page groups: only major groups force a new page. Inside a group, content
+ * flows; rows + per-person blocks avoid mid-row breaks. */
 .informe-page {
   break-before: page;
   page-break-before: always;
   padding: 0;
 }
-
 .informe-page--first {
   break-before: auto;
   page-break-before: auto;
 }
 
-/* Cover */
-.informe-cover {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  padding-top: 30mm;
+/* Compact header band (page 1 only) */
+.informe-header {
+  margin: 0 0 6mm 0;
+  string-set: informe-title attr(data-title);
 }
-
-.informe-cover__header { margin-bottom: 18mm; }
-.informe-cover__logo { max-height: 30mm; max-width: 70mm; object-fit: contain; }
-.informe-cover__brand {
-  font-size: 20pt;
+.informe-header__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8mm;
+  margin-bottom: 5mm;
+}
+.informe-header__brand { flex: 0 0 auto; }
+.informe-header__logo {
+  max-height: 14mm;
+  max-width: 50mm;
+  object-fit: contain;
+}
+.informe-header__company {
+  font-size: 14pt;
   font-weight: 700;
   color: var(--informe-primary);
   letter-spacing: -0.01em;
 }
-.informe-cover__rule {
-  display: block;
-  height: 2px;
-  width: 60mm;
-  background: var(--informe-accent);
-  margin-bottom: 10mm;
-}
-.informe-cover__title {
-  font-size: 26pt;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin: 0 0 4mm 0;
-  color: var(--informe-ink);
-}
-.informe-cover__subtitle {
-  font-size: 12pt;
-  color: var(--informe-ink-muted);
-  margin: 0 0 14mm 0;
-}
-.informe-cover__cliente {
-  margin-bottom: 14mm;
-  border-left: 2px solid var(--informe-accent);
-  padding-left: 5mm;
-}
-.informe-cover__cliente-name {
-  font-size: 16pt;
-  font-weight: 600;
+.informe-header__meta {
+  display: flex;
+  gap: 10mm;
   margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
-.informe-cover__cliente-rut {
-  font-size: 11pt;
-  color: var(--informe-ink-muted);
-  margin: 1mm 0 0 0;
-}
-.informe-cover__date {
-  font-size: 10pt;
-  color: var(--informe-ink-muted);
-  margin-top: auto;
-}
-
-/* Section title */
-.informe-section-title {
-  margin: 0 0 6mm 0;
-}
-.informe-section-title__eyebrow {
+.informe-header__metaitem { display: block; }
+.informe-header__metaitem dt {
   display: block;
-  font-size: 9pt;
+  font-size: 7.5pt;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--informe-ink-muted);
-  margin-bottom: 2mm;
+  margin: 0 0 0.5mm 0;
 }
-.informe-section-title__title {
+.informe-header__metaitem dd {
+  margin: 0;
+  font-size: 10pt;
+  font-weight: 600;
+  color: var(--informe-ink);
+}
+.informe-header__title {
+  font-size: 20pt;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin: 0 0 1.5mm 0;
+  color: var(--informe-ink);
+}
+.informe-header__cliente {
+  margin: 0 0 4mm 0;
+  font-size: 11pt;
+  color: var(--informe-ink-muted);
+}
+.informe-header__cliente-name { font-weight: 500; color: var(--informe-ink); }
+.informe-header__cliente-sep { color: var(--informe-ink-faint); }
+.informe-header__rule {
+  display: block;
+  height: 1px;
+  width: 100%;
+  background: var(--informe-primary);
+  margin-bottom: 5mm;
+}
+
+/* Numeric callouts (3 across, page 1) */
+.informe-callouts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8mm;
+  margin: 0 0 7mm 0;
+  padding: 0;
+  list-style: none;
+}
+.informe-callouts__item {
+  position: relative;
+  padding-top: 3mm;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+.informe-callouts__rule {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--informe-accent);
+}
+.informe-callouts__label {
+  font-size: 8pt;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--informe-ink-muted);
+  margin-bottom: 1mm;
+}
+.informe-callouts__value {
   font-size: 18pt;
   font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--informe-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Applicant roster chips (N>1) */
+.informe-roster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3mm;
+  margin: 0 0 6mm 0;
+  padding: 0;
+  list-style: none;
+}
+.informe-roster__chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2mm;
+  padding: 1mm 3mm;
+  border: 1px solid var(--informe-edge);
+  border-radius: 2mm;
+  font-size: 9pt;
+  background: #ffffff;
+}
+.informe-roster__chip--titular { border-color: var(--informe-primary); }
+.informe-roster__role {
+  font-size: 7.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--informe-ink-muted);
+}
+.informe-roster__name { font-weight: 500; color: var(--informe-ink); }
+
+/* Section title (editorial) */
+.informe-section-title {
+  margin: 0 0 5mm 0;
+}
+.informe-section-title__eyebrow {
+  display: block;
+  font-size: 8pt;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--informe-ink-muted);
+  margin-bottom: 1mm;
+}
+.informe-section-title__title {
+  font-size: 16pt;
+  font-weight: 700;
   letter-spacing: -0.01em;
-  margin: 0 0 2mm 0;
+  margin: 0 0 1mm 0;
   color: var(--informe-primary);
+}
+.informe-section-title__subtitle {
+  font-size: 9pt;
+  font-style: italic;
+  color: var(--informe-ink-muted);
+  margin: 0 0 2mm 0;
 }
 .informe-section-title__rule {
   display: block;
   height: 1px;
   width: 100%;
-  background: var(--informe-accent);
+  background: var(--informe-hairline);
 }
 
-/* Tables */
+/* Shared data-table primitives (Situación + helpers) */
 .informe-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 10pt;
-  margin-bottom: 8mm;
+  font-size: 9.5pt;
+  margin: 0 0 4mm 0;
 }
 .informe-table thead { display: table-header-group; }
 .informe-table tbody tr { break-inside: avoid; page-break-inside: avoid; }
 .informe-table__th {
   border-bottom: 1px solid var(--informe-primary);
   font-weight: 600;
-  padding: 2mm 2mm 2mm 0;
+  padding: 1.5mm 2mm 1.5mm 0;
   color: var(--informe-primary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  font-size: 9pt;
+  font-size: 8pt;
+  text-align: left;
 }
 .informe-table__th--right, .informe-table__td--right { text-align: right; }
 .informe-table__th--center, .informe-table__td--center { text-align: center; }
+.informe-table__th--num, .informe-table__td--num { font-variant-numeric: tabular-nums; }
 .informe-table__td {
-  padding: 2mm 2mm 2mm 0;
-  border-bottom: 1px solid var(--informe-edge);
+  padding: 1.5mm 2mm 1.5mm 0;
+  border-bottom: 1px solid var(--informe-hairline);
 }
 .informe-table__row:last-child .informe-table__td { border-bottom: none; }
 
-/* Field grid (Perfil) */
-.informe-fieldgrid {
+/* Empty-state row inside the table body. Replaces the floating italic paragraph. */
+.informe-table__emptyrow td.informe-table__emptycell {
+  padding: 3mm 0;
+  color: var(--informe-ink-muted);
+  font-style: italic;
+  text-align: center;
+  border-bottom: none;
+}
+
+/* Perfil matrix */
+.informe-perfil__section { margin-bottom: 5mm; break-inside: avoid-page; }
+.informe-perfil__sectiontitle {
+  font-size: 11pt;
+  font-weight: 600;
+  margin: 0 0 2mm 0;
+  color: var(--informe-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.informe-perfil__subsection { margin: 0 0 4mm 0; }
+.informe-perfil__subtitle {
+  font-size: 9pt;
+  font-style: italic;
+  color: var(--informe-ink-muted);
+  margin: 0 0 1.5mm 0;
+}
+.informe-perfilmatrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9.5pt;
+  margin: 0 0 2mm 0;
+}
+.informe-perfilmatrix__th {
+  border-bottom: 1px solid var(--informe-primary);
+  font-weight: 600;
+  padding: 1.5mm 2mm 1.5mm 0;
+  color: var(--informe-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 8pt;
+  text-align: left;
+}
+.informe-perfilmatrix__th--label { width: 30%; }
+.informe-perfilmatrix__col--label { width: 30%; }
+.informe-perfilmatrix__row { break-inside: avoid; page-break-inside: avoid; }
+.informe-perfilmatrix__rowlabel {
+  padding: 1.5mm 2mm 1.5mm 0;
+  border-bottom: 1px solid var(--informe-hairline);
+  font-weight: 400;
+  font-size: 8.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--informe-ink-muted);
+  text-align: left;
+  vertical-align: top;
+  width: 30%;
+}
+.informe-perfilmatrix__cell {
+  padding: 1.5mm 2mm 1.5mm 0;
+  border-bottom: 1px solid var(--informe-hairline);
+  vertical-align: top;
+  font-size: 10pt;
+  color: var(--informe-ink);
+}
+
+/* Long-text escape hatch (Empresa, Dirección, etc.) */
+.informe-perfilmatrix__longtext { margin-top: 2mm; }
+.informe-perfilmatrix__longitem {
+  margin-bottom: 2.5mm;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.informe-perfilmatrix__longlabel {
+  font-size: 8pt;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--informe-ink-muted);
+  margin: 0 0 0.8mm 0;
+}
+.informe-perfilmatrix__longvalues {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.informe-perfilmatrix__longvalue {
+  display: flex;
+  gap: 2mm;
+  font-size: 9.5pt;
+  margin-bottom: 0.5mm;
+  line-height: 1.4;
+}
+.informe-perfilmatrix__longperson {
+  font-size: 8pt;
+  color: var(--informe-ink-muted);
+  flex: 0 0 auto;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  min-width: 16mm;
+}
+.informe-perfilmatrix__longtxt { color: var(--informe-ink); }
+
+/* Stacked Perfil (N≥4 fallback) */
+.informe-perfil--stacked { display: flex; flex-direction: column; gap: 6mm; }
+.informe-perfil__personblock {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.informe-perfil__personlabel {
+  font-size: 11pt;
+  font-weight: 600;
+  margin: 0 0 2mm 0;
+  color: var(--informe-secondary);
+  border-bottom: 1px solid var(--informe-hairline);
+  padding-bottom: 1mm;
+}
+.informe-perfil__stackedlist {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 3mm 8mm;
-  margin: 0 0 6mm 0;
+  gap: 1.5mm 6mm;
+  margin: 0;
 }
-.informe-fieldgrid__item {
+.informe-perfil__stackeditem {
   display: flex;
   flex-direction: column;
   break-inside: avoid;
   page-break-inside: avoid;
 }
-.informe-fieldgrid__label {
-  font-size: 8.5pt;
+.informe-perfil__stackedlabel {
+  font-size: 8pt;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   color: var(--informe-ink-muted);
 }
-.informe-fieldgrid__value {
-  font-size: 10.5pt;
+.informe-perfil__stackedvalue {
+  font-size: 10pt;
   font-weight: 500;
-  margin: 0.5mm 0 0 0;
+  margin: 0.3mm 0 0 0;
   color: var(--informe-ink);
 }
 
-.informe-empty {
-  font-size: 10pt;
-  color: var(--informe-ink-muted);
-  font-style: italic;
-}
-
-.informe-section-block {
-  margin-bottom: 8mm;
-}
-
-.informe-section-block__title {
-  font-size: 12pt;
+/* Situación category blocks */
+.informe-sitcat { margin-bottom: 6mm; break-inside: avoid-page; }
+.informe-sitcat__title {
+  font-size: 11pt;
   font-weight: 600;
-  margin: 0 0 3mm 0;
+  margin: 0 0 1.5mm 0;
   color: var(--informe-secondary);
-}
-
-.informe-person-header {
-  font-size: 10pt;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--informe-ink-muted);
-  margin: 0 0 2mm 0;
-}
-
-.informe-resumen-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 10pt;
-  margin-bottom: 8mm;
-}
-.informe-resumen-table th, .informe-resumen-table td {
-  padding: 2mm 2mm 2mm 0;
-  border-bottom: 1px solid var(--informe-edge);
-}
-.informe-resumen-table th {
-  border-bottom: 1px solid var(--informe-primary);
-  color: var(--informe-primary);
-  text-align: right;
-  font-size: 9pt;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-.informe-resumen-table th:first-child, .informe-resumen-table td:first-child {
-  text-align: left;
-}
-.informe-resumen-table tr.informe-resumen-row--total td {
-  font-weight: 700;
-  border-top: 1px solid var(--informe-secondary);
-}
-.informe-resumen-table tr.informe-resumen-row--grandtotal td {
-  font-weight: 700;
-  border-top: 2px solid var(--informe-primary);
-  background: rgba(0, 0, 0, 0.02);
-}
-.informe-resumen-table tr.informe-resumen-row--subheader td {
-  background: var(--informe-accent);
-  color: var(--informe-on-accent);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  font-size: 9pt;
-}
-.informe-resumen-table td.informe-resumen-cell--right {
-  text-align: right;
 }
 
-/* Footer
- * Browsers (Chrome, Firefox, Safari) don't implement CSS Paged Media's
- * `position: running()` / `content: element(...)`, so we can't pull a DOM
- * element into the page margin. Static `content` IS supported, which is
- * enough for the per-page "Powered by Jogi" mark. The cover already shows
- * the company name at full size — no need to repeat it on every footer.
- */
-@page {
-  @bottom-right {
-    content: 'Powered by Jogi';
-    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
-    font-size: 8pt;
-    color: #6b7280;
-    letter-spacing: 0.04em;
-  }
+/* Resumen tables */
+.informe-resumen-section { display: flex; flex-direction: column; gap: 5mm; }
+.informe-resumen__block { break-inside: avoid-page; }
+.informe-resumen__title {
+  font-size: 10pt;
+  font-weight: 600;
+  margin: 0 0 1.5mm 0;
+  color: var(--informe-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.informe-resumen {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9.5pt;
+  margin: 0;
+}
+.informe-resumen__th {
+  border-bottom: 1px solid var(--informe-primary);
+  padding: 1.5mm 2mm 1.5mm 0;
+  color: var(--informe-primary);
+  font-size: 8pt;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+.informe-resumen__th--label { text-align: left; }
+.informe-resumen__th--num { text-align: right; font-variant-numeric: tabular-nums; }
+.informe-resumen__row { break-inside: avoid; page-break-inside: avoid; }
+.informe-resumen__cell {
+  padding: 1.3mm 2mm 1.3mm 0;
+  border-bottom: 1px solid var(--informe-hairline);
+}
+.informe-resumen__cell--label { text-align: left; }
+.informe-resumen__cell--num { text-align: right; font-variant-numeric: tabular-nums; }
+.informe-resumen__row--total td {
+  font-weight: 600;
+  border-top: 1px solid var(--informe-secondary);
+}
+.informe-resumen__row--grandtotal td {
+  font-weight: 700;
+  border-top: 2px solid var(--informe-primary);
+  background: var(--informe-band-soft);
+}
+.informe-resumen__row--subheader td {
+  background: var(--informe-band-soft);
+  color: var(--informe-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 8pt;
+  padding: 1mm 2mm 1mm 0;
+}
+.informe-resumen__emptycell {
+  text-align: center;
+  color: var(--informe-ink-muted);
+  font-style: italic;
+  padding: 3mm 0;
 }
 
 /* On-screen footer fallback so the informe preview still surfaces the mark. */
@@ -258,12 +485,16 @@
   color: var(--informe-ink-muted);
   text-align: right;
   letter-spacing: 0.04em;
-  margin-top: 12mm;
+  margin-top: 10mm;
 }
 
 @media print {
   html, body { background: #ffffff; }
-  .informe-root { -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
+  .informe-root {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
   .informe-screen-only { display: none !important; }
   /* Hide the in-DOM footer in print — the @page margin box handles it. */
   .informe-footer { display: none; }
@@ -276,6 +507,6 @@
     padding: 14mm;
     box-shadow: 0 0 0 1px var(--informe-edge);
   }
-  .informe-page { padding-top: 8mm; }
+  .informe-page { padding-top: 4mm; }
   .informe-screen-only { display: block; }
 }

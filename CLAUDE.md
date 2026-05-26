@@ -25,14 +25,17 @@ When compacting, preserve: file paths changed, errors found, decisions made, con
 ```
 src/
 ├── index.ts              # Re-export hub: <Informe>, InformeInput, ColumnConfig, SituacionRow
-├── informe.tsx           # Top-level composition
-├── header.tsx            # Compact header band / cover
-├── perfilmatrix.tsx      # Perfil matrix renderer (with longText escape hatch)
-├── situaciontables.tsx   # Category-grouped Situación tables
-├── resumensection.tsx    # Page-1 callouts + 3 Resumen tables
-├── primitives.tsx        # SectionTitle, DataTable, FieldGrid, Footer, etc.
+├── informe.tsx           # Top-level composition (3 page groups: Resumen / Perfil / Situación)
+├── header.tsx            # Compact header band + applicant roster chips
+├── callouts.tsx          # Page-1 numeric callouts (Dividendo / Carga financiera / Patrimonio)
+├── perfilmatrix.tsx      # Per-subsection Campo | Titular | Cod... matrix + longText escape hatch
+├── perfilstacked.tsx     # N≥4 fallback: per-person stacked Perfil sections
+├── situaciontables.tsx   # Category-grouped Situación tables (Persona col at N>1)
+├── resumensection.tsx    # 3 pre-built Resumen tables + empty-row fallback
+├── primitives.tsx        # SectionTitle, Footer
 ├── contrast.ts           # Foreground-vs-background contrast picker
-├── informe.css           # All print CSS (.informe-* prefix)
+├── informe.css           # All print CSS (.informe-* prefix, @page running header)
+├── fixtures.ts           # Snapshot-test fixture (N=1/2/3/4 applicants)
 └── types.ts              # InformeInput, ColumnConfig, SituacionRow
 ```
 

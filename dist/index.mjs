@@ -1,7 +1,5 @@
+import { jsxs, jsx } from 'react/jsx-runtime';
 import { displayCurrencyCompact } from '@jogi/reports';
-import { jsxs, jsx, Fragment } from 'react/jsx-runtime';
-
-// src/informe.tsx
 
 // src/contrast.ts
 var HEX_RE = /^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
@@ -41,73 +39,342 @@ function analyzeColor(hex) {
     accentOnly: isAccentOnly(safeHex)
   };
 }
-function formatChileDate(value) {
+function formatChileDateShort(value) {
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return "";
   return new Intl.DateTimeFormat("es-CL", {
     timeZone: "America/Santiago",
     year: "numeric",
-    month: "long",
+    month: "short",
     day: "numeric"
   }).format(d);
 }
-function InformePage({ children, first }) {
-  return /* @__PURE__ */ jsx("section", { className: `informe-page${first ? " informe-page--first" : ""}`, children });
+function formatUFDate(value) {
+  if (!value) return null;
+  const d = /* @__PURE__ */ new Date(value + "T12:00:00");
+  if (Number.isNaN(d.getTime())) return null;
+  return new Intl.DateTimeFormat("es-CL", {
+    timeZone: "America/Santiago",
+    year: "numeric",
+    month: "short",
+    day: "numeric"
+  }).format(d);
 }
-function Cover({ title, subtitle, cliente, generatedAt, logoUrl, companyName }) {
-  const dateStr = formatChileDate(generatedAt);
-  return /* @__PURE__ */ jsx(InformePage, { first: true, children: /* @__PURE__ */ jsxs("div", { className: "informe-cover", children: [
-    /* @__PURE__ */ jsx("div", { className: "informe-cover__header", children: logoUrl ? /* @__PURE__ */ jsx("img", { src: logoUrl, alt: companyName || "Logo", className: "informe-cover__logo" }) : /* @__PURE__ */ jsx("span", { className: "informe-cover__brand", children: companyName ?? "Jogi" }) }),
-    /* @__PURE__ */ jsx("div", { className: "informe-cover__rule", "aria-hidden": true }),
-    /* @__PURE__ */ jsx("h1", { className: "informe-cover__title", children: title }),
-    subtitle && /* @__PURE__ */ jsx("p", { className: "informe-cover__subtitle", children: subtitle }),
-    cliente && /* @__PURE__ */ jsxs("div", { className: "informe-cover__cliente", children: [
-      /* @__PURE__ */ jsx("p", { className: "informe-cover__cliente-name", children: cliente.nombre }),
-      /* @__PURE__ */ jsx("p", { className: "informe-cover__cliente-rut", children: cliente.rut })
+function formatUF(uf) {
+  if (uf == null) return "\u2014";
+  return uf.toLocaleString("es-CL", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function HeaderBand({ meta, brand, cliente }) {
+  const generated = formatChileDateShort(meta.generatedAt);
+  const ufDateStr = formatUFDate(meta.ufDate);
+  return /* @__PURE__ */ jsxs("header", { className: "informe-header", children: [
+    /* @__PURE__ */ jsxs("div", { className: "informe-header__top", children: [
+      /* @__PURE__ */ jsx("div", { className: "informe-header__brand", children: brand.logoUrl ? /* @__PURE__ */ jsx("img", { src: brand.logoUrl, alt: brand.companyName || "Logo", className: "informe-header__logo" }) : /* @__PURE__ */ jsx("span", { className: "informe-header__company", children: brand.companyName ?? "Jogi" }) }),
+      /* @__PURE__ */ jsxs("dl", { className: "informe-header__meta", children: [
+        /* @__PURE__ */ jsxs("div", { className: "informe-header__metaitem", children: [
+          /* @__PURE__ */ jsx("dt", { children: "Generado" }),
+          /* @__PURE__ */ jsx("dd", { children: generated })
+        ] }),
+        meta.ufValue != null && /* @__PURE__ */ jsxs("div", { className: "informe-header__metaitem", children: [
+          /* @__PURE__ */ jsxs("dt", { children: [
+            "UF",
+            ufDateStr ? ` \xB7 ${ufDateStr}` : ""
+          ] }),
+          /* @__PURE__ */ jsx("dd", { children: formatUF(meta.ufValue) })
+        ] })
+      ] })
     ] }),
-    /* @__PURE__ */ jsxs("p", { className: "informe-cover__date", children: [
-      "Generado el ",
-      dateStr
-    ] })
-  ] }) });
+    /* @__PURE__ */ jsx("h1", { className: "informe-header__title", children: meta.requestLabel }),
+    cliente && /* @__PURE__ */ jsxs("p", { className: "informe-header__cliente", children: [
+      /* @__PURE__ */ jsx("span", { className: "informe-header__cliente-name", children: cliente.nombre }),
+      /* @__PURE__ */ jsx("span", { className: "informe-header__cliente-sep", "aria-hidden": true, children: " \xB7 " }),
+      /* @__PURE__ */ jsx("span", { className: "informe-header__cliente-rut", children: cliente.rut })
+    ] }),
+    /* @__PURE__ */ jsx("span", { className: "informe-header__rule", "aria-hidden": true })
+  ] });
 }
-function SectionTitle({ children, eyebrow }) {
+function RosterChips({ applicants }) {
+  if (applicants.length <= 1) return null;
+  return /* @__PURE__ */ jsx("ul", { className: "informe-roster", children: applicants.map((a, i) => /* @__PURE__ */ jsxs("li", { className: `informe-roster__chip informe-roster__chip--${a.role}`, children: [
+    /* @__PURE__ */ jsx("span", { className: "informe-roster__role", children: a.role === "titular" ? "Titular" : `Codeudor ${i}` }),
+    /* @__PURE__ */ jsx("span", { className: "informe-roster__name", children: a.label })
+  ] }, `${a.role}-${i}`)) });
+}
+function formatCallout(callout) {
+  const v = callout.value;
+  if (v == null) return "\u2014";
+  switch (callout.format) {
+    case "percent":
+      return `${(v * 100).toFixed(1)}%`;
+    case "uf":
+      return `UF ${v.toLocaleString("es-CL", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    case "currency":
+    default:
+      return displayCurrencyCompact(v);
+  }
+}
+function Callouts({ callouts }) {
+  if (!callouts.length) return null;
+  return /* @__PURE__ */ jsx("ul", { className: "informe-callouts", children: callouts.map((c, i) => /* @__PURE__ */ jsxs("li", { className: "informe-callouts__item", children: [
+    /* @__PURE__ */ jsx("span", { className: "informe-callouts__rule", "aria-hidden": true }),
+    /* @__PURE__ */ jsx("span", { className: "informe-callouts__label", children: c.label }),
+    /* @__PURE__ */ jsx("span", { className: "informe-callouts__value", children: formatCallout(c) })
+  ] }, `${c.label}-${i}`)) });
+}
+function PerfilStacked({ applicants }) {
+  return /* @__PURE__ */ jsx("div", { className: "informe-perfil informe-perfil--stacked", children: applicants.map((applicant, ai) => /* @__PURE__ */ jsxs("div", { className: "informe-perfil__personblock", children: [
+    /* @__PURE__ */ jsxs("h3", { className: "informe-perfil__personlabel", children: [
+      applicant.role === "titular" ? "Titular" : `Codeudor ${ai}`,
+      " \u2014 ",
+      applicant.label
+    ] }),
+    applicant.perfil.map((sub, si) => /* @__PURE__ */ jsxs("div", { className: "informe-perfil__subsection", children: [
+      sub.subsection && /* @__PURE__ */ jsxs("p", { className: "informe-perfil__subtitle", children: [
+        sub.section,
+        " \u2014 ",
+        sub.subsection
+      ] }),
+      /* @__PURE__ */ jsx("dl", { className: "informe-perfil__stackedlist", children: sub.fields.map((f, fi) => /* @__PURE__ */ jsxs("div", { className: "informe-perfil__stackeditem", children: [
+        /* @__PURE__ */ jsx("dt", { className: "informe-perfil__stackedlabel", children: f.label }),
+        /* @__PURE__ */ jsx("dd", { className: "informe-perfil__stackedvalue", children: f.value || "\u2014" })
+      ] }, fi)) })
+    ] }, si))
+  ] }, ai)) });
+}
+var MATRIX_COL_CAP = 3;
+function buildSubsectionGroups(applicants) {
+  const groups = /* @__PURE__ */ new Map();
+  const order = [];
+  applicants.forEach((applicant, ai) => {
+    for (const sub of applicant.perfil) {
+      const key = `${sub.section}|||${sub.subsection ?? ""}`;
+      let group = groups.get(key);
+      if (!group) {
+        group = { section: sub.section, subsection: sub.subsection, rows: [] };
+        groups.set(key, group);
+        order.push(key);
+      }
+      for (const field of sub.fields) {
+        let row = group.rows.find((r) => r.field.label === field.label);
+        if (!row) {
+          row = {
+            field,
+            values: applicants.map(() => ({ value: "", longText: false })),
+            anyLongText: false
+          };
+          group.rows.push(row);
+        }
+        row.values[ai] = { value: field.value, longText: !!field.longText };
+        if (field.longText) row.anyLongText = true;
+      }
+    }
+  });
+  return order.map((k) => groups.get(k));
+}
+function PerfilMatrixTable({
+  applicants,
+  group
+}) {
+  const matrixRows = group.rows.filter((r) => !r.anyLongText);
+  if (matrixRows.length === 0) return null;
+  const showPersonHeaders = applicants.length > 1;
+  return /* @__PURE__ */ jsxs("table", { className: "informe-perfilmatrix", children: [
+    /* @__PURE__ */ jsxs("colgroup", { children: [
+      /* @__PURE__ */ jsx("col", { className: "informe-perfilmatrix__col--label" }),
+      applicants.map((_, i) => /* @__PURE__ */ jsx("col", { className: "informe-perfilmatrix__col--value" }, i))
+    ] }),
+    showPersonHeaders && /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsxs("tr", { children: [
+      /* @__PURE__ */ jsx("th", { scope: "col", className: "informe-perfilmatrix__th informe-perfilmatrix__th--label", children: "Campo" }),
+      applicants.map((a, i) => /* @__PURE__ */ jsx("th", { scope: "col", className: "informe-perfilmatrix__th", children: a.role === "titular" ? "Titular" : `Cod. ${i}` }, i))
+    ] }) }),
+    /* @__PURE__ */ jsx("tbody", { children: matrixRows.map((row, ri) => /* @__PURE__ */ jsxs("tr", { className: "informe-perfilmatrix__row", children: [
+      /* @__PURE__ */ jsx("th", { scope: "row", className: "informe-perfilmatrix__rowlabel", children: row.field.label }),
+      row.values.map((v, vi) => /* @__PURE__ */ jsx("td", { className: "informe-perfilmatrix__cell", children: v.value && v.value !== "" ? v.value : "\u2014" }, vi))
+    ] }, ri)) })
+  ] });
+}
+function LongTextList({
+  applicants,
+  group
+}) {
+  const longRows = group.rows.filter((r) => r.anyLongText);
+  if (longRows.length === 0) return null;
+  const showPersonHeaders = applicants.length > 1;
+  return /* @__PURE__ */ jsx("div", { className: "informe-perfilmatrix__longtext", children: longRows.map((row, ri) => /* @__PURE__ */ jsxs("div", { className: "informe-perfilmatrix__longitem", children: [
+    /* @__PURE__ */ jsx("p", { className: "informe-perfilmatrix__longlabel", children: row.field.label }),
+    /* @__PURE__ */ jsx("ul", { className: "informe-perfilmatrix__longvalues", children: row.values.map((v, vi) => /* @__PURE__ */ jsxs("li", { className: "informe-perfilmatrix__longvalue", children: [
+      showPersonHeaders && /* @__PURE__ */ jsxs("span", { className: "informe-perfilmatrix__longperson", children: [
+        applicants[vi].role === "titular" ? "Titular" : `Cod. ${vi}`,
+        ":"
+      ] }),
+      /* @__PURE__ */ jsx("span", { className: "informe-perfilmatrix__longtxt", children: v.value && v.value !== "" ? v.value : "\u2014" })
+    ] }, vi)) })
+  ] }, ri)) });
+}
+function PerfilMatrix({ applicants }) {
+  if (applicants.length > MATRIX_COL_CAP) {
+    return /* @__PURE__ */ jsx(PerfilStacked, { applicants });
+  }
+  const groups = buildSubsectionGroups(applicants);
+  const sectionOrder = [];
+  const bySection = /* @__PURE__ */ new Map();
+  for (const g of groups) {
+    if (!bySection.has(g.section)) {
+      bySection.set(g.section, []);
+      sectionOrder.push(g.section);
+    }
+    bySection.get(g.section).push(g);
+  }
+  return /* @__PURE__ */ jsx("div", { className: "informe-perfil", children: sectionOrder.map((sectionTitle) => {
+    const subs = bySection.get(sectionTitle);
+    return /* @__PURE__ */ jsxs("div", { className: "informe-perfil__section", children: [
+      /* @__PURE__ */ jsx("h3", { className: "informe-perfil__sectiontitle", children: sectionTitle }),
+      subs.map((sub, si) => /* @__PURE__ */ jsxs("div", { className: "informe-perfil__subsection", children: [
+        sub.subsection && sub.subsection !== sectionTitle && /* @__PURE__ */ jsx("p", { className: "informe-perfil__subtitle", children: sub.subsection }),
+        /* @__PURE__ */ jsx(PerfilMatrixTable, { applicants, group: sub }),
+        /* @__PURE__ */ jsx(LongTextList, { applicants, group: sub })
+      ] }, si))
+    ] }, sectionTitle);
+  }) });
+}
+var PERSONA_KEY = "__persona__";
+var CATEGORIES = [
+  { key: "deudas", title: "Deudas", emptyLabel: "Sin deudas registradas." },
+  { key: "propiedades", title: "Propiedades", emptyLabel: "Sin propiedades registradas." },
+  { key: "vehiculos", title: "Veh\xEDculos", emptyLabel: "Sin veh\xEDculos registrados." },
+  { key: "inversiones", title: "Inversiones", emptyLabel: "Sin inversiones registradas." }
+];
+function formatCell(value, format) {
+  if (value == null || value === "") return "\u2014";
+  if (format === "currency") {
+    return typeof value === "number" ? displayCurrencyCompact(value) : String(value);
+  }
+  if (format === "integer") {
+    return typeof value === "number" ? value.toLocaleString("es-CL") : String(value);
+  }
+  return String(value);
+}
+function mergeRowsForCategory(applicants, category) {
+  const baseColumns = applicants[0]?.situacion[category].columns ?? [];
+  const mergedRows = [];
+  applicants.forEach((a) => {
+    const rows = a.situacion[category].rows;
+    for (const row of rows) {
+      mergedRows.push({ ...row, [PERSONA_KEY]: a.label });
+    }
+  });
+  const showPersona = applicants.length > 1;
+  const columns = showPersona ? [{ key: PERSONA_KEY, label: "Persona", align: "left", format: "text" }, ...baseColumns] : baseColumns;
+  return { rows: mergedRows, columns };
+}
+function CategoryTable({
+  title,
+  emptyLabel,
+  rows,
+  columns
+}) {
+  return /* @__PURE__ */ jsxs("div", { className: "informe-sitcat", children: [
+    /* @__PURE__ */ jsx("h3", { className: "informe-sitcat__title", children: title }),
+    /* @__PURE__ */ jsxs("table", { className: "informe-table", children: [
+      /* @__PURE__ */ jsx("colgroup", { children: columns.map((c) => /* @__PURE__ */ jsx(
+        "col",
+        {
+          style: c.width ? { width: c.width } : void 0
+        },
+        c.key
+      )) }),
+      /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsx("tr", { children: columns.map((c) => {
+        const align = c.align ?? (c.format === "currency" || c.format === "integer" ? "right" : "left");
+        const numeric = c.format === "currency" || c.format === "integer";
+        return /* @__PURE__ */ jsx(
+          "th",
+          {
+            className: `informe-table__th informe-table__th--${align}${numeric ? " informe-table__th--num" : ""}`,
+            children: c.label
+          },
+          c.key
+        );
+      }) }) }),
+      /* @__PURE__ */ jsx("tbody", { children: rows.length === 0 ? /* @__PURE__ */ jsx("tr", { className: "informe-table__emptyrow", children: /* @__PURE__ */ jsx("td", { colSpan: columns.length, className: "informe-table__emptycell", children: emptyLabel }) }) : rows.map((row, ri) => /* @__PURE__ */ jsx("tr", { className: "informe-table__row", children: columns.map((c) => {
+        const align = c.align ?? (c.format === "currency" || c.format === "integer" ? "right" : "left");
+        const numeric = c.format === "currency" || c.format === "integer";
+        return /* @__PURE__ */ jsx(
+          "td",
+          {
+            className: `informe-table__td informe-table__td--${align}${numeric ? " informe-table__td--num" : ""}`,
+            children: formatCell(row[c.key], c.format)
+          },
+          c.key
+        );
+      }) }, ri)) })
+    ] })
+  ] });
+}
+function SituacionTables({ applicants }) {
+  return /* @__PURE__ */ jsx("div", { className: "informe-situacion", children: CATEGORIES.map((cat) => {
+    const merged = mergeRowsForCategory(applicants, cat.key);
+    return /* @__PURE__ */ jsx(
+      CategoryTable,
+      {
+        title: cat.title,
+        emptyLabel: cat.emptyLabel,
+        rows: merged.rows,
+        columns: merged.columns
+      },
+      cat.key
+    );
+  }) });
+}
+function formatResumenCell(v, row) {
+  if (v == null || v === "") return "\u2014";
+  if (typeof v === "number") {
+    if (row.format === "percent") return `${(v * 100).toFixed(1)}%`;
+    if (row.format === "integer") return v.toLocaleString("es-CL");
+    return displayCurrencyCompact(v);
+  }
+  return String(v);
+}
+function ResumenRow({ row, colCount }) {
+  if (row.type === "subheader") {
+    return /* @__PURE__ */ jsx("tr", { className: "informe-resumen__row informe-resumen__row--subheader", children: /* @__PURE__ */ jsx("td", { colSpan: colCount + 1, children: row.label }) });
+  }
+  const typeClass = row.type === "grandtotal" ? "informe-resumen__row--grandtotal" : row.type === "total" ? "informe-resumen__row--total" : "";
+  return /* @__PURE__ */ jsxs("tr", { className: `informe-resumen__row ${typeClass}`, children: [
+    /* @__PURE__ */ jsx("td", { className: "informe-resumen__cell informe-resumen__cell--label", children: row.label }),
+    Array.from({ length: colCount }).map((_, i) => /* @__PURE__ */ jsx("td", { className: "informe-resumen__cell informe-resumen__cell--num", children: formatResumenCell(row.values?.[i], row) }, i))
+  ] });
+}
+function ResumenTable({ table }) {
+  const colCount = table.headers.length - 1;
+  return /* @__PURE__ */ jsxs("div", { className: "informe-resumen__block", children: [
+    /* @__PURE__ */ jsx("h3", { className: "informe-resumen__title", children: table.title }),
+    /* @__PURE__ */ jsxs("table", { className: "informe-resumen", children: [
+      /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsx("tr", { children: table.headers.map((h, i) => /* @__PURE__ */ jsx(
+        "th",
+        {
+          className: `informe-resumen__th${i === 0 ? " informe-resumen__th--label" : " informe-resumen__th--num"}`,
+          children: h
+        },
+        `${h}-${i}`
+      )) }) }),
+      /* @__PURE__ */ jsx("tbody", { children: table.rows.length === 0 ? /* @__PURE__ */ jsx("tr", { className: "informe-resumen__row", children: /* @__PURE__ */ jsx("td", { colSpan: table.headers.length, className: "informe-resumen__emptycell", children: "Sin datos." }) }) : table.rows.map((row, i) => /* @__PURE__ */ jsx(ResumenRow, { row, colCount }, i)) })
+    ] })
+  ] });
+}
+function ResumenSection({ tables }) {
+  return /* @__PURE__ */ jsx("div", { className: "informe-resumen-section", children: tables.map((table, i) => /* @__PURE__ */ jsx(ResumenTable, { table }, `${table.title}-${i}`)) });
+}
+function SectionTitle({
+  children,
+  eyebrow,
+  subtitle
+}) {
   return /* @__PURE__ */ jsxs("header", { className: "informe-section-title", children: [
     eyebrow && /* @__PURE__ */ jsx("span", { className: "informe-section-title__eyebrow", children: eyebrow }),
     /* @__PURE__ */ jsx("h2", { className: "informe-section-title__title", children }),
+    subtitle && /* @__PURE__ */ jsx("p", { className: "informe-section-title__subtitle", children: subtitle }),
     /* @__PURE__ */ jsx("span", { className: "informe-section-title__rule", "aria-hidden": true })
   ] });
-}
-function DataTable({
-  columns,
-  rows,
-  emptyLabel,
-  footer
-}) {
-  if (rows.length === 0 && emptyLabel) {
-    return /* @__PURE__ */ jsx("p", { className: "informe-empty", children: emptyLabel });
-  }
-  return /* @__PURE__ */ jsxs("table", { className: "informe-table", children: [
-    /* @__PURE__ */ jsx("colgroup", { children: columns.map((c) => /* @__PURE__ */ jsx("col", { style: c.width ? { width: c.width } : void 0 }, c.key)) }),
-    /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsx("tr", { children: columns.map((c) => /* @__PURE__ */ jsx("th", { className: `informe-table__th informe-table__th--${c.align ?? "left"}`, children: c.label }, c.key)) }) }),
-    /* @__PURE__ */ jsx("tbody", { children: rows.map((row, i) => /* @__PURE__ */ jsx("tr", { className: "informe-table__row", children: columns.map((c) => /* @__PURE__ */ jsx("td", { className: `informe-table__td informe-table__td--${c.align ?? "left"}`, children: c.render ? c.render(row) : formatCell(row[c.key]) }, c.key)) }, i)) }),
-    footer && /* @__PURE__ */ jsx("tfoot", { children: footer })
-  ] });
-}
-function formatCell(v) {
-  if (v == null) return "\u2014";
-  if (typeof v === "number") return v.toLocaleString("es-CL");
-  return String(v);
-}
-function currencyCell(v) {
-  if (typeof v !== "number") return "\u2014";
-  return displayCurrencyCompact(v);
-}
-function FieldGrid({ rows }) {
-  return /* @__PURE__ */ jsx("dl", { className: "informe-fieldgrid", children: rows.map(({ label, value }, i) => /* @__PURE__ */ jsxs("div", { className: "informe-fieldgrid__item", children: [
-    /* @__PURE__ */ jsx("dt", { className: "informe-fieldgrid__label", children: label }),
-    /* @__PURE__ */ jsx("dd", { className: "informe-fieldgrid__value", children: value == null || value === "" ? "\u2014" : value })
-  ] }, `${label}-${i}`)) });
 }
 function Footer({ companyName }) {
   return /* @__PURE__ */ jsx("footer", { className: "informe-footer", children: /* @__PURE__ */ jsxs("span", { children: [
@@ -128,136 +395,36 @@ function brandStyle(brand) {
     ["--informe-on-accent"]: accent.foreground
   };
 }
-function PerfilForPerson({ applicant }) {
-  const sections = /* @__PURE__ */ new Map();
-  for (const sub of applicant.perfil) {
-    if (!sections.has(sub.section)) sections.set(sub.section, []);
-    sections.get(sub.section).push(sub);
-  }
-  return /* @__PURE__ */ jsx(Fragment, { children: Array.from(sections.entries()).map(([sectionTitle, subs]) => /* @__PURE__ */ jsxs("div", { className: "informe-section-block", children: [
-    /* @__PURE__ */ jsx("h3", { className: "informe-section-block__title", children: sectionTitle }),
-    subs.map((sub, i) => /* @__PURE__ */ jsxs("div", { className: "informe-section-block", children: [
-      sub.subsection && sub.subsection !== sectionTitle && /* @__PURE__ */ jsx("p", { className: "informe-person-header", children: sub.subsection }),
-      /* @__PURE__ */ jsx(FieldGrid, { rows: sub.fields.map((f) => ({ label: f.label, value: f.value })) })
-    ] }, `${sectionTitle}-${i}`))
-  ] }, sectionTitle)) });
-}
-function mapColumns(cols) {
-  return cols.map((c) => ({
-    key: c.key,
-    label: c.label,
-    width: c.width,
-    align: c.align ?? (c.format === "currency" || c.format === "integer" ? "right" : "left"),
-    render: c.format === "currency" ? (row) => currencyCell(row[c.key]) : void 0
-  }));
-}
-function SituacionTablesForPerson({ applicant }) {
-  const { deudas, propiedades, vehiculos, inversiones } = applicant.situacion;
-  return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsxs("div", { className: "informe-section-block", children: [
-      /* @__PURE__ */ jsx("h3", { className: "informe-section-block__title", children: "Deudas" }),
-      /* @__PURE__ */ jsx(
-        DataTable,
-        {
-          columns: mapColumns(deudas.columns),
-          rows: deudas.rows,
-          emptyLabel: "Sin deudas registradas."
-        }
-      )
-    ] }),
-    /* @__PURE__ */ jsxs("div", { className: "informe-section-block", children: [
-      /* @__PURE__ */ jsx("h3", { className: "informe-section-block__title", children: "Propiedades" }),
-      /* @__PURE__ */ jsx(
-        DataTable,
-        {
-          columns: mapColumns(propiedades.columns),
-          rows: propiedades.rows,
-          emptyLabel: "Sin propiedades registradas."
-        }
-      )
-    ] }),
-    /* @__PURE__ */ jsxs("div", { className: "informe-section-block", children: [
-      /* @__PURE__ */ jsx("h3", { className: "informe-section-block__title", children: "Veh\xEDculos" }),
-      /* @__PURE__ */ jsx(
-        DataTable,
-        {
-          columns: mapColumns(vehiculos.columns),
-          rows: vehiculos.rows,
-          emptyLabel: "Sin veh\xEDculos registrados."
-        }
-      )
-    ] }),
-    /* @__PURE__ */ jsxs("div", { className: "informe-section-block", children: [
-      /* @__PURE__ */ jsx("h3", { className: "informe-section-block__title", children: "Inversiones" }),
-      /* @__PURE__ */ jsx(
-        DataTable,
-        {
-          columns: mapColumns(inversiones.columns),
-          rows: inversiones.rows,
-          emptyLabel: "Sin inversiones registradas."
-        }
-      )
-    ] })
-  ] });
-}
-function ResumenSection({ tables }) {
-  return /* @__PURE__ */ jsx(Fragment, { children: tables.map((table, i) => /* @__PURE__ */ jsxs("div", { className: "informe-section-block", children: [
-    /* @__PURE__ */ jsx("h3", { className: "informe-section-block__title", children: table.title }),
-    /* @__PURE__ */ jsx(ResumenRowsTable, { rows: table.rows, headers: table.headers })
-  ] }, `${table.title}-${i}`)) });
-}
-function ResumenRowsTable({ rows, headers }) {
-  return /* @__PURE__ */ jsxs("table", { className: "informe-resumen-table", children: [
-    /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsx("tr", { children: headers.map((h) => /* @__PURE__ */ jsx("th", { children: h }, h)) }) }),
-    /* @__PURE__ */ jsx("tbody", { children: rows.map((row, i) => /* @__PURE__ */ jsx(ResumenRow, { row, colCount: headers.length - 1 }, i)) })
-  ] });
-}
-function ResumenRow({ row, colCount }) {
-  if (row.type === "subheader") {
-    return /* @__PURE__ */ jsx("tr", { className: "informe-resumen-row--subheader", children: /* @__PURE__ */ jsx("td", { colSpan: colCount + 1, children: row.label }) });
-  }
-  const cls = row.type === "grandtotal" ? "informe-resumen-row--grandtotal" : row.type === "total" ? "informe-resumen-row--total" : "";
-  return /* @__PURE__ */ jsxs("tr", { className: cls, children: [
-    /* @__PURE__ */ jsx("td", { children: row.label }),
-    Array.from({ length: colCount }).map((_, i) => {
-      const v = row.values?.[i];
-      return /* @__PURE__ */ jsx("td", { className: "informe-resumen-cell--right", children: formatResumenCell(v, row) }, i);
-    })
-  ] });
-}
-function formatResumenCell(v, row) {
-  if (v == null) return "\u2014";
-  if (typeof v === "number") {
-    if (row.format === "percent") return `${(v * 100).toFixed(1)}%`;
-    if (row.format === "integer") return v.toLocaleString("es-CL");
-    return displayCurrencyCompact(v);
-  }
-  return String(v);
-}
 function Informe({ input }) {
   return /* @__PURE__ */ jsxs("article", { className: "informe-root", style: brandStyle(input.brand), children: [
-    /* @__PURE__ */ jsx(
-      Cover,
-      {
-        title: input.meta.requestLabel,
-        subtitle: input.cliente?.nombre ?? null,
-        cliente: input.cliente,
-        generatedAt: input.meta.generatedAt,
-        logoUrl: input.brand.logoUrl ?? null,
-        companyName: input.brand.companyName ?? null
-      }
-    ),
-    input.applicants.map((applicant, i) => /* @__PURE__ */ jsxs(InformePage, { children: [
-      /* @__PURE__ */ jsx(SectionTitle, { eyebrow: `Perfil \u2014 ${applicant.role === "titular" ? "Titular" : "Codeudor"}`, children: applicant.label }),
-      /* @__PURE__ */ jsx(PerfilForPerson, { applicant })
-    ] }, `perfil-${i}`)),
-    input.applicants.map((applicant, i) => /* @__PURE__ */ jsxs(InformePage, { children: [
-      /* @__PURE__ */ jsx(SectionTitle, { eyebrow: `Situaci\xF3n \u2014 ${applicant.role === "titular" ? "Titular" : "Codeudor"}`, children: applicant.label }),
-      /* @__PURE__ */ jsx(SituacionTablesForPerson, { applicant })
-    ] }, `situacion-${i}`)),
-    /* @__PURE__ */ jsxs(InformePage, { children: [
-      /* @__PURE__ */ jsx(SectionTitle, { eyebrow: "Resumen", children: "Resumen Financiero" }),
+    /* @__PURE__ */ jsxs("section", { className: "informe-page informe-page--first informe-group informe-group--resumen", children: [
+      /* @__PURE__ */ jsx(HeaderBand, { meta: input.meta, brand: input.brand, cliente: input.cliente }),
+      /* @__PURE__ */ jsx(Callouts, { callouts: input.resumen.callouts }),
+      /* @__PURE__ */ jsx(RosterChips, { applicants: input.applicants }),
+      /* @__PURE__ */ jsx(SectionTitle, { eyebrow: "Resumen", subtitle: "S\xEDntesis financiera de la solicitud", children: "Resumen Financiero" }),
       /* @__PURE__ */ jsx(ResumenSection, { tables: input.resumen.tables })
+    ] }),
+    /* @__PURE__ */ jsxs("section", { className: "informe-page informe-group informe-group--perfil", children: [
+      /* @__PURE__ */ jsx(
+        SectionTitle,
+        {
+          eyebrow: "Perfil",
+          subtitle: input.applicants.length === 1 ? "Antecedentes personales, laborales y comerciales" : `Antecedentes comparados \u2014 ${input.applicants.length} solicitantes`,
+          children: "Perfil"
+        }
+      ),
+      /* @__PURE__ */ jsx(PerfilMatrix, { applicants: input.applicants })
+    ] }),
+    /* @__PURE__ */ jsxs("section", { className: "informe-page informe-group informe-group--situacion", children: [
+      /* @__PURE__ */ jsx(
+        SectionTitle,
+        {
+          eyebrow: "Situaci\xF3n",
+          subtitle: input.applicants.length === 1 ? "Deudas, propiedades, veh\xEDculos e inversiones" : "Por categor\xEDa, agrupando a todos los solicitantes",
+          children: "Situaci\xF3n Patrimonial"
+        }
+      ),
+      /* @__PURE__ */ jsx(SituacionTables, { applicants: input.applicants })
     ] }),
     /* @__PURE__ */ jsx(Footer, { companyName: input.brand.companyName ?? null })
   ] });

@@ -86,6 +86,17 @@ interface InformeInput {
 interface InformeProps {
     input: InformeInput;
 }
+/**
+ * Top-level composition. Three major groups separated by `break-before: page`
+ * in CSS, content inside each group flows freely:
+ *
+ *   Page 1 — Resumen group: header + callouts + roster chips + 3 Resumen tables
+ *   Page 2+ — Perfil group: matrix (N≤3) or stacked (N≥4)
+ *   Page 3+ — Situación group: 4 category-grouped tables (Persona col at N>1)
+ *
+ * Brand colors flow in via `input.brand` → CSS variables; the rest is
+ * presentation. No fetch, no calc, no state.
+ */
 declare function Informe({ input }: InformeProps): JSX.Element;
 
 export { type ColumnConfig, Informe, type InformeApplicant, type InformeCallout, type InformeInput, type InformePerfilField, type InformePerfilSubsection, type InformeProps, type InformeResumenRow, type InformeResumenTable, type SituacionRow };
