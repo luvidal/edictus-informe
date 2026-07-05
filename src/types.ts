@@ -1,4 +1,4 @@
-// @jogi/informe — public input contract.
+// @edictus/informe — public input contract.
 //
 // `InformeInput` is the data the host (jogi main app) ships to <Informe />.
 // It is plain-JSON; the satellite never imports domain code or schemas.

@@ -1,4 +1,4 @@
-// @jogi/informe — public surface
+// @edictus/informe — public surface
 
 export { Informe } from './informe'
 export type { InformeProps } from './informe'

@@ -1,7 +1,7 @@
 'use strict';
 
 var jsxRuntime = require('react/jsx-runtime');
-var reports = require('@jogi/reports');
+var reports = require('@edictus/reports');
 
 // src/contrast.ts
 var HEX_RE = /^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;

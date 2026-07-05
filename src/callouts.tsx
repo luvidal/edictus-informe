@@ -1,4 +1,4 @@
-import { displayCurrencyCompact } from '@jogi/reports'
+import { displayCurrencyCompact } from '@edictus/reports'
 import type { InformeCallout } from './types'
 
 function formatCallout(callout: InformeCallout): string {

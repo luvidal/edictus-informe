@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
-import { displayCurrencyCompact } from '@jogi/reports'
+import { displayCurrencyCompact } from '@edictus/reports'
 import type {
   InformeApplicant, ColumnConfig, SituacionRow,
 } from './types'

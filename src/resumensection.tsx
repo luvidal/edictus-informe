@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { displayCurrencyCompact } from '@jogi/reports'
+import { displayCurrencyCompact } from '@edictus/reports'
 import type { InformeResumenRow, InformeResumenTable } from './types'
 
 function formatResumenCell(v: unknown, row: InformeResumenRow): ReactNode {

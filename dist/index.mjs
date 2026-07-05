@@ -1,5 +1,5 @@
 import { jsxs, jsx, Fragment } from 'react/jsx-runtime';
-import { displayCurrencyCompact } from '@jogi/reports';
+import { displayCurrencyCompact } from '@edictus/reports';
 
 // src/contrast.ts
 var HEX_RE = /^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;

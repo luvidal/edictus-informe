@@ -1,5 +1,5 @@
 {
-  "name": "@jogi/informe",
+  "name": "@edictus/informe",
   "version": "0.1.0",
   "private": true,
   "main": "dist/index.js",
@@ -27,7 +27,7 @@
     "react-dom": ">=18"
   },
   "dependencies": {
-    "@jogi/reports": "github:luvidal/jogi-reports#51222e7e7790b1f906749a498a316e4e1daa228b"
+    "@edictus/reports": "github:luvidal/edictus-reports#0ad7fdee04ed3a18cf9f5906f36c094d43d890ba"
   },
   "devDependencies": {
     "@testing-library/react": "^16.3.2",
