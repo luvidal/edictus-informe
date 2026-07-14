@@ -1,4 +1,4 @@
-# @jogi/informe — Printable Informe Satellite
+# @edictus/informe — Printable Informe Satellite
 
 Pure-presentation React component that renders a designer-grade printable informe (formerly "dossier") from a pre-computed `InformeInput`. Extracted from [jogi](../jogi) to isolate layout, theming, and print CSS from the data-producer host.
 
@@ -18,7 +18,7 @@ When compacting, preserve: file paths changed, errors found, decisions made, con
 - **TypeScript** + **React** (peer dep, ">=18")
 - **tsup** for bundling (ESM + CJS + .d.ts)
 - **Vitest** + **happy-dom** for unit + HTML-structure snapshot tests
-- **Peers allowed**: `@jogi/reports` for pure formatters (`displayCurrencyCompact`). No domain code.
+- **Peers allowed**: `@edictus/reports` for pure formatters (`displayCurrencyCompact`). No domain code.
 
 ## Project Structure
 
@@ -43,7 +43,7 @@ src/
 
 1. **File naming** → lowercase, no hyphens/underscores
 2. **No `@/` imports** → relative within `src/`
-3. **No domain leakage** — no `@jogi/situacion`, no `data/*.json`, nothing from `app/`. Inputs are plain JSON; brand colors are hex strings.
+3. **No domain leakage** — no host `situacion` domain code, no `data/*.json`, nothing from `app/`. Inputs are plain JSON; brand colors are hex strings.
 4. **Pure presentation** — no fetch, no calc, no React state beyond UI.
 5. **API stability** — exported props and named exports must stay backward-compatible with jogi's call sites. Breaking changes update the host in the same handoff.
 6. **CLAUDE.md maintenance** — update on contract/behavior changes.
@@ -61,12 +61,12 @@ npm run test:watch   # Watch mode
 ## Consumer Integration
 
 ```json
-"@jogi/informe": "github:luvidal/jogi-informe#<sha>"
+"@edictus/informe": "github:luvidal/edictus-informe#<sha>"
 ```
 
 Host calls:
 ```tsx
-import { Informe } from '@jogi/informe'
+import { Informe } from '@edictus/informe'
 import { toInformeInput } from './toinformeinput'
 
 <Informe input={toInformeInput(snapshot)} />
