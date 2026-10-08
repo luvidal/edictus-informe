@@ -1,6 +1,6 @@
 // @edictus/informe — public input contract.
 //
-// `InformeInput` is the data the host (jogi main app) ships to <Informe />.
+// `InformeInput` is the data the host app ships to <Informe />.
 // It is plain-JSON; the satellite never imports domain code or schemas.
 
 export interface InformePerfilField {

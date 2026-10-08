@@ -27,7 +27,7 @@ export function SectionTitle({
 export function Footer({ companyName }: { companyName?: string | null }) {
   return (
     <footer className='informe-footer'>
-      <span>{companyName ? `${companyName} · ` : ''}Powered by Jogi</span>
+      <span>{companyName ? `${companyName} · ` : ''}Powered by eDictus</span>
     </footer>
   )
 }

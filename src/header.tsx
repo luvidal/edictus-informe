@@ -59,7 +59,7 @@ export function HeaderBand({ meta, brand, cliente }: HeaderBandProps) {
         <div className='informe-header__brand'>
           {brand.logoUrl
             ? <img src={brand.logoUrl} alt={brand.companyName || 'Logo'} className='informe-header__logo' />
-            : <span className='informe-header__company'>{brand.companyName ?? 'Jogi'}</span>}
+            : <span className='informe-header__company'>{brand.companyName ?? 'eDictus'}</span>}
         </div>
         <dl className='informe-header__meta'>
           <div className='informe-header__metaitem'>

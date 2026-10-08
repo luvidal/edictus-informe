@@ -7,6 +7,6 @@ export default defineConfig({
     splitting: false,
     sourcemap: true,
     clean: true,
-    external: ['react', 'react-dom', '@jogi/reports'],
+    external: ['react', 'react-dom', '@edictus/reports'],
     treeshake: true,
 })

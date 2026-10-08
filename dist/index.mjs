@@ -69,7 +69,7 @@ function HeaderBand({ meta, brand, cliente }) {
   const ufDateStr = formatUFDate(meta.ufDate);
   return /* @__PURE__ */ jsxs("header", { className: "informe-header", "data-title": meta.requestLabel, children: [
     /* @__PURE__ */ jsxs("div", { className: "informe-header__top", children: [
-      /* @__PURE__ */ jsx("div", { className: "informe-header__brand", children: brand.logoUrl ? /* @__PURE__ */ jsx("img", { src: brand.logoUrl, alt: brand.companyName || "Logo", className: "informe-header__logo" }) : /* @__PURE__ */ jsx("span", { className: "informe-header__company", children: brand.companyName ?? "Jogi" }) }),
+      /* @__PURE__ */ jsx("div", { className: "informe-header__brand", children: brand.logoUrl ? /* @__PURE__ */ jsx("img", { src: brand.logoUrl, alt: brand.companyName || "Logo", className: "informe-header__logo" }) : /* @__PURE__ */ jsx("span", { className: "informe-header__company", children: brand.companyName ?? "eDictus" }) }),
       /* @__PURE__ */ jsxs("dl", { className: "informe-header__meta", children: [
         /* @__PURE__ */ jsxs("div", { className: "informe-header__metaitem", children: [
           /* @__PURE__ */ jsx("dt", { children: "Generado" }),
@@ -447,7 +447,7 @@ function SectionTitle({
 function Footer({ companyName }) {
   return /* @__PURE__ */ jsx("footer", { className: "informe-footer", children: /* @__PURE__ */ jsxs("span", { children: [
     companyName ? `${companyName} \xB7 ` : "",
-    "Powered by Jogi"
+    "Powered by eDictus"
   ] }) });
 }
 function brandStyle(brand) {
