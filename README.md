@@ -1,5 +1,7 @@
 # @edictus/informe
 
+**English** · [Español](README.es.md)
+
 A printable credit-analysis report (*informe*) as a single React component. It
 takes a pre-computed `InformeInput` with the applicants, their profiles, their
 assets and debts, and the summary figures. It renders a branded, multi-page
